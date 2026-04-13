@@ -1,0 +1,16 @@
+# Sway configuration file
+#
+# For a default configuration, see /etc/sway/config
+#
+# For more information, see sway(5) and sway-input(5).
+#
+# Note: The order of inclusion matters.
+
+# Include all configuration files from the config.d directory
+
+# nwg-displays-generated, hopefully will be overwritten by kanshi
+include ~/.config/sway/outputs
+include ~/.config/sway/workspaces
+
+include config.d/*
+

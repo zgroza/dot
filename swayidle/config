@@ -1,0 +1,6 @@
+timeout 300 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'
+timeout 300 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"'
+timeout 315 'gtklock -d'
+before-sleep 'gtklock -d'
+after-resume 'sudo systemctl restart NetworkManager; bash ~/.config/sway/lid_detect.sh'
+lock 'gtklock -d'

@@ -1,0 +1,309 @@
+[
+    // -------------------------------------------------------------------------
+    // Top Bar Configuration
+    // -------------------------------------------------------------------------
+    {
+        "layer": "bottom",
+        "start_hidden": false,
+        "position": "top",
+        "bar_id": "bar-0",
+        "ipc": true,
+
+        "modules-left": [
+            "hyprland/workspaces",
+            "sway/workspaces",
+            "temperature"
+        ],
+        "modules-center": [
+            "sway/mode",
+            // "hyprland/window",
+            // "sway/window",
+            "clock#date"
+        ],
+        "modules-right": [
+            "idle_inhibitor",
+            "backlight",
+            "memory",
+            "cpu",
+            "wireplumber",
+            "tray",
+            "custom/notification",
+            "custom/power"
+        ],
+
+        // -------------------------------------------------------------------------
+        // Modules (definitions for the top bar)
+        // -------------------------------------------------------------------------
+
+        "idle_inhibitor": {
+          "format": "{icon}",
+          "format-icons": {
+            "activated": "󰈈  on",
+            "deactivated": "󰈉  off"
+          },
+          "timeout": 300
+        },
+
+        "sway/mode": {
+            "format": "󰗼 {}",
+            "max-length": 50
+        },
+        
+        "custom/notification": {
+            "tooltip": false,
+            "format": "{icon}",
+            "format-icons": {
+            "notification": "<span foreground='red'><sup></sup></span>",
+            "none": "",
+            "dnd-notification": "<span foreground='red'><sup></sup></span>",
+            "dnd-none": "",
+            "inhibited-notification": "<span foreground='red'><sup></sup></span>",
+            "inhibited-none": "",
+            "dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
+            "dnd-inhibited-none": ""
+            },
+            "return-type": "json",
+            "exec-if": "which swaync-client",
+            "exec": "swaync-client -swb",
+            "on-click": "swaync-client -t -sw",
+            "on-click-right": "swaync-client -d -sw",
+            "escape": true
+        },
+
+        "temperature": {
+            "interval": 30,
+            "critical-threshold": 80,
+            "format-critical": "󰔆 {temperatureC}°C",
+            "format": "{icon} {temperatureC}°C",
+            "format-icons": ["󰔄", "󰔅", "󰔆"],
+            "max-length": 7,
+            "min-length": 7,
+            "on-click": "xsensors"
+        },
+
+        "memory": {
+            "interval": 30,
+            "format": "󰍛 {used:0.2f} / {total:0.0f} GB",
+            "on-click": "kitty -e btop",
+            "on-click-right": "pkill -RTMIN+1 waybar",
+            "signal": 1
+        },
+
+        "backlight": {
+            "device": "intel_backlight",
+            "format": "{icon} {percent}%",
+            "format-alt": "{percent}% {icon}",
+            "format-alt-click": "click-right",
+            "format-icons": ["󰃞", "󰃟", "󰃠"],
+            "on-scroll-down": "brightnessctl s 5%-",
+            "on-scroll-up": "brightnessctl s +5%"
+        },
+
+        "custom/power": {
+            "format": " 󰐥 ",
+            "tooltip": false,
+            "on-click": "wlogout"
+        },
+
+        "cpu": {
+            "interval": 30,
+            "format": "󰻠 {max_frequency}GHz <span color=\"darkgray\">| {usage}%</span>",
+            "on-click-right": "pkill -RTMIN+1 waybar",
+            "signal": 1
+        },
+
+        "hyprland/workspaces": {
+            "all-outputs": true,
+            "format": " {name} <span color='#6c7086'>│</span> {windows} ",
+            "workspace-taskbar": {
+              "enable": true,
+              "update-active-window": true
+            },
+            "on-scroll-up": "hyprctl dispatch workspace e+1 1>/dev/null",
+            "on-scroll-down": "hyprctl dispatch workspace e-1 1>/dev/null",
+            "sort-by-number": true,
+            "active-only": false
+        },
+
+        "sway/workspaces": {
+            "all-outputs": true,
+            "format": "{icon}",
+            "format-icons": {
+                "1": "󰇧",
+                "2": "󰍡",
+                "3": "󰈔",
+                "4": "󰒓",
+                "5": "",
+                "term": "",
+                "F1": "{}"
+            },
+            "active-only": false
+        },
+
+        "hyprland/window": {
+            "max-length": 100,
+            "separate-outputs": true,
+            "icon": true,
+            "icon-size": 15
+        },
+
+        "sway/window": {
+            "max-length": 100,
+            "icon": true,
+            "icon-size": 15,
+            "show-focused-workspace-name": true
+        },
+
+        "clock#date": {
+            "interval": 30,
+            "format": "󰥔 {:%R  %A, %d %B} 󰃭",
+            "tooltip-format": "<big>{:%Y %B}\n<tt>{calendar}</tt></big>",
+            "today-format": "<b>{}</b>",
+            "on-click-right": "pkill -RTMIN+1 waybar",
+            "signal": 1
+        },
+
+        "wireplumber": {
+            "on-click": "pavucontrol",
+            "on-click-middle": "zsh ~/.config/waybar/pick_audio.zsh source",
+            "on-click-right": "zsh ~/.config/waybar/pick_audio.zsh sink",
+            "tooltip-format": "Sink: {node_name}\n\nTo select:\n- sink, right-click\n- source, middle-click",
+            "format": "{icon} {volume}%",
+            "format-muted": "󰝟",
+            "format-source": "󰍬",
+            "format-source-muted": "󰍭",
+            "format-icons": {
+                "headphone": "󰋋",
+                "hands-free": "󰋎",
+                "headset": "󰋎",
+                "phone": "󰂸",
+                "portable": "󰂸",
+                "car": "󰄋",
+                "default": ["󰕿", "󰖀", "󰕾"]
+            }
+        },
+
+        "tray": {
+            "icon-size": 15,
+            "spacing": 4
+        }
+    },
+
+    // -------------------------------------------------------------------------
+    // Bottom Bar Configuration
+    // -------------------------------------------------------------------------
+    {
+        "layer": "bottom",
+        "start_hidden": false,
+        "position": "bottom",
+        "bar_id": "bar-1",
+        "ipc": true,
+        
+        "modules-left": [
+            "bluetooth",
+            "network"
+        ],
+
+        "modules-center": [
+            "custom/rofi",
+            "wlr/taskbar"
+        ],
+
+        "modules-right": [
+            "mpris",
+            "battery",
+            "custom/weather"
+        ],
+
+        "bluetooth": {
+            "max-length": 10,
+            "format": "󰂯",
+            "format-disabled": "󰂲",
+            "format-connected": "󰂯 {device_alias}",
+            "format-connected-battery": "󰂯 {device_battery_percentage}% {device_alias}",
+            "format-device-preference": [ "WH-1000XM5", "ERGO 860B" ],
+            "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+            "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+            "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+            "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+            "on-click": "blueman-manager"
+        },
+
+        "network": {
+            "format-wifi": "{icon} {signalStrength}%",
+            "format-ethernet": "󰈀 {ifname}: {ipaddr}/{cidr}",
+            "format-linked": "󰈂 {ifname} (No IP)",
+            "format": "󰤮",
+            "format-disconnected": "󰤮",
+            "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+            "on-click": "nm-connection-editor",
+            "on-click-right": "if [ \"$(nmcli radio wifi)\" = \"enabled\" ]; then nmcli radio wifi off; else nmcli radio wifi on; fi",
+            "tooltip-format": " {bandwidthUpBits}  {bandwidthDownBits}\n{ifname}\n{ipaddr}/{cidr}\n",
+            "tooltip-format-wifi": " {essid} {frequency}MHz\nStrength: {signaldBm}dBm ({signalStrength}%)\nIP: {ipaddr}/{cidr}\n {bandwidthUpBits}  {bandwidthDownBits}",
+            "interval": 30
+        },
+
+        "custom/rofi": {
+            "format": "󰀻",
+            "tooltip": false,
+            "on-click": "zsh -i -c 'pkill rofi || rofi -show combi'"
+        },
+
+        "wlr/taskbar": {
+            "format": "{icon} {title}",
+            "icon-size": 15, 
+            "tooltip-format": "{title}",
+            "on-click": "activate",
+            "on-click-middle": "close",
+            "active-first": false,
+            "all-outputs": false,
+            "rewrite": {
+              "^(.{15}).+$": "$1…"
+            } 
+        },
+
+        "mpris": {
+          "format": "{status_icon} {title}",
+          "max-length": 16,
+          "status-icons": {
+            "playing": "",
+            "paused": "",
+            "stopped": ""
+          }
+        },
+
+        "battery": {
+            "interval": 30,
+            "states": {
+                "good": 75,
+                "warning": 30,
+                "critical": 15
+            },
+            "format": "{icon} {capacity}%",
+            "format-charging": "󰂄 {capacity}%",
+            "format-plugged": "󰂄 {capacity}%",
+            "format-icons": [
+                "󰁺",
+                "󰁻",
+                "󰁼",
+                "󰁽",
+                "󰁾",
+                "󰁿",
+                "󰂀",
+                "󰂁",
+                "󰂂",
+                "󰁹"
+            ]
+        },
+
+        "custom/weather": {
+            "format": "{}",
+            "interval": 3600,
+            "exec": "curl 'wttr.in/Kraków?format=%m%20%t%20%p'",
+            "exec-if": "ping wttr.in -c1",
+            "on-click": "xdg-open https://www.google.com/search?q=weather",
+            "on-click-right": "pkill -RTMIN+1 waybar",
+            "signal": 1
+        }
+    }
+]

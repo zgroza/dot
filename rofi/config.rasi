@@ -1,0 +1,17 @@
+configuration {
+  modes: [ combi, window, drun, run ];
+  combi-modes: [ window, drun, run ];
+  show-icons: true;
+  terminal: "kitty";
+  monitor: -1;
+  drun-show-actions: true;
+  kb-row-left: "Control+Page_Up,Alt+h";
+  kb-row-right: "Control+Page_Down,Alt+l";
+  kb-row-up: "Up,Alt+k";
+  kb-row-down: "Down,Alt+j";
+  kb-clear-line: "Control+w,Alt+d";
+  hover-select: true;
+  me-accept-entry: "MousePrimary";
+  me-select-entry: "";
+}
+@theme "pastel_custom"

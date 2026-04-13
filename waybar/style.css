@@ -1,0 +1,310 @@
+/* --- Color Definitions --- */
+@define-color base #000000;
+@define-color mantle #181825;
+@define-color surface0 #313244;
+@define-color surface1 #45475a;
+@define-color surface2 #585b70;
+@define-color text #cdd6f4;
+@define-color subtext0 #a6adc8;
+@define-color blue #89b4fa;
+@define-color lavender #b4befe;
+@define-color sapphire #74c7ec;
+@define-color sky #89dceb;
+@define-color teal #94e2d5;
+@define-color green #a6e3a1;
+@define-color yellow #f9e2af;
+@define-color peach #fab387;
+@define-color maroon #eba0ac;
+@define-color red #f38ba8;
+@define-color mauve #cba6f7;
+@define-color pink #f5c2e7;
+@define-color flamingo #f2cdcd;
+@define-color rosewater #f5e0dc;
+
+@define-color border-color rgba(255, 255, 255, 0.1);
+
+* {
+    font-family: "AtkynsonMono Nerd Font", "JetBrainsMono Nerd Font", "Font Awesome 6 Free", sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    min-height: 0;
+}
+
+#waybar {
+    background-color: @base;
+    color: @text;
+}
+
+/* Top and Bottom bar specific styling - Removing border radius to fit OLED screen edges perfectly */
+#waybar.top, #waybar.bottom {
+    border-radius: 0;
+}
+
+/* Tooltip styling */
+tooltip {
+    background: @mantle;
+    border: 1px solid @border-color;
+    border-radius: 12px;
+}
+
+tooltip label {
+    color: @text;
+}
+
+/* --- Modules General Styling (Material 3 Pills) --- */
+#clock,
+#battery,
+#cpu,
+#memory,
+#temperature,
+#backlight,
+#network,
+#wireplumber,
+#mode,
+#idle_inhibitor,
+#mpris,
+#bluetooth,
+#custom-rofi,
+#custom-weather,
+#custom-notification,
+#custom-power,
+#tray,
+#taskbar {
+    background-color: @surface0;
+    color: @text;
+    border-radius: 20px;
+    padding: 6px 14px;
+    margin: 4px 3px;
+    border: 1px solid @border-color; /* Material 3 Subtle Border */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Subtle shadow for depth */
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Hover effects for modules to match workspace buttons */
+#clock:hover,
+#battery:hover,
+#cpu:hover,
+#memory:hover,
+#temperature:hover,
+#backlight:hover,
+#network:hover,
+#wireplumber:hover,
+#mode:hover,
+#idle_inhibitor:hover,
+#mpris:hover,
+#bluetooth:hover,
+#custom-rofi:hover,
+#custom-weather:hover,
+#custom-notification:hover,
+#custom-power:hover,
+#tray:hover {
+    background-color: @surface1;
+    color: @text;
+    border-color: @text;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+}
+
+/* --- Specific Module Tweaks --- */
+
+/* Workspaces - Container transparent, buttons are the pills */
+#workspaces {
+    background-color: transparent;
+    margin: 4px 3px;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+}
+
+#workspaces button {
+    background-color: @surface0;
+    color: @subtext0;
+    border-radius: 20px;
+    padding: 0 10px;
+    margin: 0 2px;
+    border: 1px solid @border-color;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+#workspaces button.active, #workspaces button.focused {
+    background-color: @mauve;
+    color: @base;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-color: @mauve;
+    box-shadow: 0 0 10px rgba(203, 166, 247, 0.4);
+}
+
+#workspaces button:hover {
+    background-color: @surface1;
+    color: @text;
+    border-color: @text;
+}
+
+#workspaces button.urgent {
+    background-color: @red;
+    color: @base;
+    border-color: @red;
+}
+
+/* Mode */
+#mode {
+    background-color: @peach;
+    color: @base;
+    border-color: @peach;
+    font-weight: bold;
+}
+
+/* Clock */
+#clock {
+    background-color: @surface1;
+    color: @lavender;
+    font-weight: bold;
+}
+
+/* Battery */
+#battery {
+    color: @green;
+}
+
+#battery.charging, #battery.plugged {
+    color: @base;
+    background-color: @green;
+    border-color: @green;
+}
+
+#battery.critical:not(.charging) {
+    background-color: @red;
+    color: @base;
+    border-color: @red;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@keyframes blink {
+    to {
+        background-color: @text;
+        color: @red;
+        border-color: @text;
+    }
+}
+
+/* CPU & Memory */
+#cpu {
+    color: @sapphire;
+}
+
+#memory {
+    color: @sky;
+}
+
+/* Network */
+#network {
+    color: @teal;
+}
+
+#network.disconnected {
+    background-color: @red;
+    color: @base;
+    border-color: @red;
+}
+
+/* Bluetooth */
+#bluetooth {
+    color: @blue;
+}
+
+#bluetooth.disconnected {
+    color: @subtext0;
+}
+
+/* Wireplumber / Audio */
+#wireplumber {
+    color: @pink;
+}
+
+#wireplumber.muted {
+    background-color: @surface0;
+    color: @subtext0;
+}
+
+/* Custom Power */
+#custom-power {
+    background-color: @red;
+    color: @base;
+    border-color: @red;
+    padding: 6px 12px;
+    margin-right: 6px;
+}
+
+/* Custom Rofi (Launcher) */
+#custom-rofi {
+    background-color: @blue;
+    color: @base;
+    border-color: @blue;
+    padding: 6px 14px;
+    margin-left: 6px;
+    font-size: 16px;
+}
+
+/* Taskbar */
+/* Remove default module style from taskbar container so buttons handle it */
+#taskbar {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+#taskbar button {
+    background-color: @surface0;
+    color: @subtext0;
+    border-radius: 20px;
+    padding: 0 10px;
+    margin: 0 2px;
+    border: 1px solid @border-color;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+#taskbar button.active {
+    background-color: @mauve;
+    color: @base;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-color: @mauve;
+    box-shadow: 0 0 10px rgba(203, 166, 247, 0.4);
+}
+
+#taskbar button:hover {
+    background-color: @surface1;
+    color: @text;
+    border-color: @text;
+}
+
+/* Tray */
+#tray {
+    padding: 6px 12px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: @red;
+    border-color: @red;
+}
+
+/* Mpris */
+#mpris {
+    background-color: @surface1;
+    color: @lavender;
+}
+
+#mpris.playing {
+    background-color: @surface1;
+    color: @rosewater;
+}

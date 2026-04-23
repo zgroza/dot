@@ -69,7 +69,8 @@ tooltip label {
 #custom-notification,
 #custom-power,
 #tray,
-#taskbar {
+#taskbar,
+#power-profiles-daemon {
     background-color: @surface0;
     color: @text;
     border-radius: 20px;
@@ -97,7 +98,8 @@ tooltip label {
 #custom-weather:hover,
 #custom-notification:hover,
 #custom-power:hover,
-#tray:hover {
+#tray:hover,
+#power-profiles-daemon:hover {
     background-color: @surface1;
     color: @text;
     border-color: @text;
@@ -307,4 +309,25 @@ tooltip label {
 #mpris.playing {
     background-color: @surface1;
     color: @rosewater;
+}
+
+/* Power Profiles */
+#power-profiles-daemon {
+    color: @blue;
+}
+
+#power-profiles-daemon.performance {
+    background-color: @red;
+    color: @base;
+    border-color: @red;
+}
+
+#power-profiles-daemon.balanced {
+    color: @blue;
+}
+
+#power-profiles-daemon.power-saver {
+    background-color: @green;
+    color: @base;
+    border-color: @green;
 }

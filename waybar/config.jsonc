@@ -211,9 +211,22 @@
 
         "modules-right": [
             "mpris",
+            "power-profiles-daemon",
             "battery",
             "custom/weather"
         ],
+
+        "power-profiles-daemon": {
+            "format": "{icon}",
+            "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+            "tooltip": true,
+            "format-icons": {
+              "default": "󰓅",
+              "performance": "󰓅",
+              "balanced": "󰾅",
+              "power-saver": "󰌪"
+            }
+        },
 
         "bluetooth": {
             "max-length": 10,

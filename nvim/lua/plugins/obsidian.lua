@@ -22,6 +22,8 @@ local workspaces = {
 local local_workspaces_file = vim.fn.expand("~/.config/nvim-obsidian-workspaces.lua")
 
 --- Example ~/.config/nvim-obsidian-workspaces.lua:
+-- ---@module 'obsidian'                      
+-- ---@type obsidian.workspace.WorkspaceSpec[]
 -- return {
 --   {
 --     name = "Vault 1",
@@ -32,11 +34,10 @@ local local_workspaces_file = vim.fn.expand("~/.config/nvim-obsidian-workspaces.
 if vim.fn.filereadable(local_workspaces_file) == 1 then
   local ok, local_workspaces = pcall(dofile, local_workspaces_file)
 
-  -- If the file loaded successfully and returned a table, merge it.
   if ok and type(local_workspaces) == "table" then
-    for _, ws in ipairs(local_workspaces) do
-      table.insert(workspaces, ws)
-    end
+    -- Since no-vault is a fallback, add it last
+    table.insert(local_workspaces, workspaces[1])
+    workspaces = local_workspaces
   end
 end
 
@@ -54,5 +55,23 @@ return {
       enabled = true,
     },
     workspaces = workspaces,
+    ---@param title string|?
+    ---@param dir obsidian.Path|?
+    ---@return string
+    note_id_func = function(title, dir)
+      if not title then
+        return require("obsidian.builtin").title_id(title, dir)
+      end
+
+      if not dir then
+        return title
+      end
+
+      if (require("obsidian.path").new(dir) / title):with_suffix(".md", true):exists() then
+        return require("obsidian.builtin").title_id(title, dir)
+      end
+
+      return title
+    end,
   },
 }

@@ -21,6 +21,14 @@ local workspaces = {
 -- Attempt to load device-specific workspaces from the external file.
 local local_workspaces_file = vim.fn.expand("~/.config/nvim-obsidian-workspaces.lua")
 
+--- Example ~/.config/nvim-obsidian-workspaces.lua:
+-- return {
+--   {
+--     name = "Vault 1",
+--     path = "~/vaults/Vault 1",
+--   },
+-- }
+
 if vim.fn.filereadable(local_workspaces_file) == 1 then
   local ok, local_workspaces = pcall(dofile, local_workspaces_file)
 

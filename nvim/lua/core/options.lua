@@ -25,10 +25,17 @@ vim.opt.laststatus = 3        -- Always show statusline
 vim.opt.virtualedit = "block" -- Block can select outside of present text
 vim.opt.conceallevel = 2
 
+-- Folds config
+vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.wo.foldmethod = "expr"
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
+vim.opt.foldcolumn = "auto"
+
 -- Highlight on yank
 vim.api.nvim_create_autocmd("TextYankPost", {
   callback = function()
-    vim.highlight.on_yank()
+    vim.hl.on_yank()
   end,
 })
 

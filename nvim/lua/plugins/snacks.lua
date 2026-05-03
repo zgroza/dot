@@ -55,13 +55,7 @@ return {
       end,
       desc = "File Explorer",
     },
-    {
-      "<C-b>",
-      function()
-        Snacks.explorer({ layout = { preset = "sidebar", }, hidden = true, ignored = true, focus = false, })
-      end,
-      desc = "File Explorer",
-    },
+    { "<C-b>", function() Snacks.explorer() end, desc = "File Explorer", },
     -- find
     { "<leader>fb", function() Snacks.picker.buffers() end, desc = "Buffers", },
     { "<leader>fc", function() Snacks.picker.files({ cwd = vim.fn.stdpath("config"), }) end, desc = "Find Config File", },

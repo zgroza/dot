@@ -23,6 +23,7 @@ vim.opt.wrap = true           -- Wrap lines
 vim.opt.scrolloff = 8         -- Lines of context around the cursor
 vim.opt.laststatus = 3        -- Always show statusline
 vim.opt.virtualedit = "block" -- Block can select outside of present text
+vim.opt.conceallevel = 2
 
 -- Highlight on yank
 vim.api.nvim_create_autocmd("TextYankPost", {

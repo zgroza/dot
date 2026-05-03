@@ -114,8 +114,14 @@ vim.api.nvim_create_autocmd("LspAttach", {
   desc = "Setup LSP features on attach",
   callback = function(args)
     local bufnr = args.buf
-
-    local buflocal_augroup = vim.api.nvim_create_augroup("LspHighlights_Buffer_" .. bufnr, { clear = true, })
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if not client or not client.server_capabilities.documentHighlightProvider then
+      return -- Why bother? It doesn't support it anyway.
+    end
+    local buflocal_augroup = vim.api.nvim_create_augroup("LspHighlights_Buffer_" .. bufnr,
+      {
+        clear = true,
+      })
 
     vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI", }, {
       group = buflocal_augroup,

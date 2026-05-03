@@ -6,7 +6,12 @@ local function formatter()
     timeout_ms = 1000,
   }
   local data = MiniDiff.get_buf_data()
-  if not data or not data.hunks then
+  if not data then
+    vim.notify("VCS not found, formatting everything.")
+    require("conform").format(args)
+    return
+  end
+  if not data.hunks then
     vim.notify("No hunks in this buffer")
     return
   end
@@ -43,8 +48,7 @@ return {
     },
     format_on_save = nil,
   },
-  config = function(opts)
-    require("conform").setup(opts)
+  init = function()
     vim.api.nvim_set_keymap("n", "<leader>fo", "",
                             { desc = "Format current buffer", callback = formatter, })
     vim.api.nvim_set_keymap("n", "<leader>F", "",

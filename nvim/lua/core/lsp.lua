@@ -96,6 +96,16 @@ local function setup_ts_ls()
   vim.lsp.enable("ts_ls")
 end
 
+local function setup_rust_analyzer()
+  vim.lsp.config.rust_analyzer = {
+    capabilities = capabilities,
+    cmd = { "rust-analyzer", },
+    filetypes = { "rust", },
+    root_markers = { "Cargo.toml", "rust-project.json", ".git", },
+  }
+  vim.lsp.enable("rust_analyzer")
+end
+
 if vim.fn.executable("clangd") then
   setup_clangd()
 end
@@ -104,6 +114,9 @@ if vim.fn.executable("lua-language-server") then
 end
 if vim.fn.executable("typescript-language-server") then
   setup_ts_ls()
+end
+if vim.fn.executable("rust-analyzer") then
+  setup_rust_analyzer()
 end
 
 -- Make highlights appear faster (700 ms, default is ~4 s)

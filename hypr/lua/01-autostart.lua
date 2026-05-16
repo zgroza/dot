@@ -9,7 +9,12 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("hypridle")
     hl.exec_cmd("swaync")
     hl.exec_cmd("swayosd-server")
+    hl.exec_cmd("waybar")
     hl.exec_cmd("/usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1")
+    hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
 end)
 
-hl.exec_cmd("pidof waybar || waybar")
+hl.on("config.reloaded", function()
+  hl.exec_cmd("pidof waybar || waybar")
+end)
+

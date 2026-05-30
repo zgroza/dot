@@ -11,7 +11,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("swayosd-server")
     hl.exec_cmd("waybar")
     hl.exec_cmd("arch-update --tray")
-    hl.exec_cmd("sleep 5 && keepassxc --minimized")
+    hl.exec_cmd("sleep 2 && keepassxc --minimized")
     hl.exec_cmd("/usr/lib/hyprpolkitagent/hyprpolkitagent"
       .. " || " ..
       "/usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1"

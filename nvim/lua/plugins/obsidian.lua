@@ -4,10 +4,11 @@
 local workspaces = {
   {
     name = "no-vault",
-    path = function()
-      return assert(vim.fs.dirname(vim.api.nvim_buf_get_name(0)))
-    end,
+    path = vim.fn.expand("~") .. "/.fallback/",
     overrides = {
+      sync = {
+        enabled = false,
+      },
       notes_subdir = vim.NIL,
       new_notes_location = "current_dir",
       templates = {
@@ -17,6 +18,8 @@ local workspaces = {
     },
   },
 }
+
+vim.fn.mkdir(vim.fn.expand("~") .. "/.fallback/", "p")
 
 -- Attempt to load device-specific workspaces from the external file.
 local local_workspaces_file = vim.fn.expand("~/.config/nvim-obsidian-workspaces.lua")
@@ -28,6 +31,11 @@ local local_workspaces_file = vim.fn.expand("~/.config/nvim-obsidian-workspaces.
 --   {
 --     name = "Vault 1",
 --     path = "~/vaults/Vault 1",
+--   },
+--   overrides = {
+--     sync = {
+--       enabled = true,
+--     },
 --   },
 -- }
 
@@ -50,10 +58,10 @@ return {
   ---@module 'obsidian'
   ---@type obsidian.config
   opts = {
-    legacy_commands = false,
     sync = {
-      enabled = true,
+      enabled = false,
     },
+    legacy_commands = false,
     workspaces = workspaces,
     ---@param title string|?
     ---@param dir obsidian.Path|?

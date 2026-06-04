@@ -31,10 +31,10 @@ local local_workspaces_file = vim.fn.expand("~/.config/nvim-obsidian-workspaces.
 --   {
 --     name = "Vault 1",
 --     path = "~/vaults/Vault 1",
---   },
---   overrides = {
---     sync = {
---       enabled = true,
+--     overrides = {
+--       sync = {
+--         enabled = true,
+--       },
 --     },
 --   },
 -- }

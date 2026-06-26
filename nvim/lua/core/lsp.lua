@@ -115,6 +115,7 @@ end
 if vim.fn.executable("typescript-language-server") then
   setup_ts_ls()
 end
+vim.env.PATH = "./third_party/rust-toolchain/bin/:" .. vim.env.PATH
 if vim.fn.executable("rust-analyzer") then
   setup_rust_analyzer()
 end

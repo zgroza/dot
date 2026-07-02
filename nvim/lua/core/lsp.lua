@@ -120,6 +120,9 @@ if vim.fn.executable("rust-analyzer") then
   setup_rust_analyzer()
 end
 
+-- Clear redundant rust-analyzer unresolvedReference semantic tokens (fixes fake macro errors)
+vim.api.nvim_set_hl(0, '@lsp.type.unresolvedReference.rust', { undercurl = false, underline = false, sp = 'none', fg = 'none', bg = 'none' })
+
 -- Make highlights appear faster (700 ms, default is ~4 s)
 vim.o.updatetime = 700
 local lsp_augroup = vim.api.nvim_create_augroup("LspConfig", { clear = true, })

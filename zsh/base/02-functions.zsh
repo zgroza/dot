@@ -13,13 +13,13 @@ md() {
 
 get_clipboard() {
   case "$1" in (c|p) ;; (*) echo "Usage: get_clipboard p|c"; return ;; esac
-  local temp=`mktemp`
   printf '\e]52;'$1';?\e\' >$TTY
-  read -d '\\n' -e -r -t 2 <$TTY >$temp
+  local clip
+  read -s -r -d '\' -t 2 clip <$TTY
   if (( $? )); then print "no clipboard available"; return; fi 
-  clipboard_contents=`tr -d '\033' <$temp | sed 's/^.*;//' | base64 -d -i`
-  rm $temp
-  echo -n "$clipboard_contents"
+  local clipboard_contents
+  clipboard_contents=$(printf '%s' "$clip" | tr -d '\033' | sed 's/^.*;//' | base64 -d -i 2>/dev/null)
+  printf '%s' "$clipboard_contents"
 }
 
 set_clipboard() {

@@ -105,8 +105,8 @@ return {
     { "<leader>gr", function() Snacks.picker.lsp_references() end, nowait = true, desc = "References", },
     { "<leader>gI", function() Snacks.picker.lsp_implementations() end, desc = "Goto Implementation", },
     { "<leader>gy", function() Snacks.picker.lsp_type_definitions() end, desc = "Goto T[y]pe Definition", },
-    { "<leader>ws", function() Snacks.picker.lsp_symbols() end, desc = "LSP Symbols", },
-    { "<leader>wS", function() Snacks.picker.lsp_workspace_symbols() end, desc = "LSP Workspace Symbols", },
+    { "<leader>Ws", function() Snacks.picker.lsp_symbols() end, desc = "LSP Symbols", },
+    { "<leader>WS", function() Snacks.picker.lsp_workspace_symbols() end, desc = "LSP Workspace Symbols", },
     -- bufdel
     { "<leader>bd", function() Snacks.bufdelete.delete() end, desc = "Bufdelete", },
     -- Git

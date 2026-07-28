@@ -1,7 +1,8 @@
 -- Global keybindings
 -- Some quality-of-life things
-vim.keymap.set("n", "<leader>q", ":q<CR>", { desc = "Close first windows, then buffers", })
-vim.keymap.set("n", "<leader>w", ":w<CR>", { desc = "Save file", })
+vim.keymap.set("n", "<leader>q", vim.cmd.quit, { desc = "Close window", })
+vim.keymap.set("n", "<leader>Q", vim.cmd.qall, { desc = "Close all windows", })
+vim.keymap.set("n", "<leader>w", vim.cmd.update, { desc = "Save file if modified", })
 -- Clipboard stuff
 vim.keymap.set("n", "<M-a>", function()
                  vim.api.nvim_win_set_cursor(0, { 1, 0, })

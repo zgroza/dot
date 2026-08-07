@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Function to create a symlink, handling existing files/dirs
 create_link() {
     source_path=$1
     target_path=$2
 
-    # Expand tilde to home directory
-    eval target_path_expanded=$target_path
+    # Targets come in already expanded; no eval needed.
+    target_path_expanded=$target_path
 
     # Check if the source path exists
     if [ ! -e "$source_path" ]; then
@@ -42,20 +42,68 @@ create_link() {
     echo "Created link: $target_path -> $source_path"
 }
 
-# Get the directory of the script itself
-script_dir=$(dirname "$(readlink -f "$0")")
+usage() {
+    echo "Usage: $0 [linux|mac]"
+    echo
+    echo "Links the shared configs plus the ones for the given OS."
+    echo "Without an argument the OS is detected with uname."
+    exit 2
+}
 
-create_link "$script_dir/zsh/.zshrc" ~/.zshrc
-create_link "$script_dir/zsh/base" ~/.config/zsh/base
-create_link "$script_dir/nvim" ~/.config/nvim
-create_link "$script_dir/rofi" ~/.config/rofi
-create_link "$script_dir/gtklock" ~/.config/gtklock
-create_link "$script_dir/sway" ~/.config/sway
-create_link "$script_dir/swayidle" ~/.config/swayidle
-create_link "$script_dir/swaylock" ~/.config/swaylock
-create_link "$script_dir/swaync" ~/.config/swaync
-create_link "$script_dir/swayidle" ~/.swayidle
-create_link "$script_dir/hypr" ~/.config/hypr
-create_link "$script_dir/kitty" ~/.config/kitty
-create_link "$script_dir/waybar" ~/.config/waybar
-create_link "$script_dir/tmux/.tmux.conf" ~/.tmux.conf
+# Get the directory of the script itself. Avoid readlink -f, BSD doesn't have it.
+script_dir=$(cd "$(dirname "$0")" && pwd -P)
+
+case "${1:-}" in
+    linux|mac)
+        os=$1
+        ;;
+    "")
+        case "$(uname -s)" in
+            Linux)  os=linux ;;
+            Darwin) os=mac ;;
+            *)      echo "Unsupported system: $(uname -s)"; usage ;;
+        esac
+        echo "Detected $os."
+        ;;
+    *)
+        usage
+        ;;
+esac
+
+# Shared between systems. zsh/ is linked whole; .zshrc picks the os/ subdir
+# to load at runtime, so the same tree works everywhere.
+common_links=(
+    "zsh/.zshrc:$HOME/.zshrc"
+    "zsh:$HOME/.config/zsh"
+    "nvim:$HOME/.config/nvim"
+    "kitty:$HOME/.config/kitty"
+    "tmux/.tmux.conf:$HOME/.tmux.conf"
+)
+
+linux_links=(
+    "rofi:$HOME/.config/rofi"
+    "gtklock:$HOME/.config/gtklock"
+    "sway:$HOME/.config/sway"
+    "swayidle:$HOME/.config/swayidle"
+    "swaylock:$HOME/.config/swaylock"
+    "swaync:$HOME/.config/swaync"
+    "swayidle:$HOME/.swayidle"
+    "hypr:$HOME/.config/hypr"
+    "waybar:$HOME/.config/waybar"
+)
+
+mac_links=()
+
+link_all() {
+    local entry
+    for entry in "$@"; do
+        create_link "$script_dir/${entry%%:*}" "${entry#*:}"
+    done
+}
+
+link_all "${common_links[@]}"
+
+case $os in
+    linux) link_all "${linux_links[@]}" ;;
+    mac)   link_all "${mac_links[@]}" ;;
+esac

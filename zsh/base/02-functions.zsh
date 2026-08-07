@@ -2,13 +2,9 @@ amend() {
   git commit -a --amend --no-edit
 }
 
-record_screen_to_file() {
-  wf-recorder -g "$(slurp)" -f "$@"
-}
-
 md() {
   pandoc -f markdown -t html5 "$1" -o "/tmp/$1.html"
-  xdg-open "/tmp/$1.html"
+  "$OPENER" "/tmp/$1.html"
 }
 
 get_clipboard() {
@@ -16,9 +12,9 @@ get_clipboard() {
   printf '\e]52;'$1';?\e\' >$TTY
   local clip
   read -s -r -d '\' -t 2 clip <$TTY
-  if (( $? )); then print "no clipboard available"; return; fi 
+  if (( $? )); then print "no clipboard available"; return; fi
   local clipboard_contents
-  clipboard_contents=$(printf '%s' "$clip" | tr -d '\033' | sed 's/^.*;//' | base64 -d -i 2>/dev/null)
+  clipboard_contents=$(printf '%s' "$clip" | tr -d '\033' | sed 's/^.*;//' | _b64decode)
   printf '%s' "$clipboard_contents"
 }
 
@@ -32,8 +28,7 @@ set_clipboard() {
     print "Input too large for clipboard." >&2
     return 1
   fi
-  # base64 with -w 0 to disable line wrapping.
-  printf "\e]52;c;%s\e\\" "$(echo -n "$input" | base64 -w 0)" >$TTY
+  printf "\e]52;c;%s\e\\" "$(echo -n "$input" | _b64encode)" >$TTY
 }
 
 _reset() {
@@ -61,18 +56,13 @@ er() {
     echo "NVIM not set and /tmp/nvim not found"
     return 1
   fi
-  
+
   if ! [[ -e "$nvim_server" ]]; then
     echo "Nvim server socket not found at $nvim_server"
     return 1
   fi
-  
-  NVIM="$nvim_server" nvim --server "$nvim_server" --remote-tab "$@"
-}
 
-run_in_nice_augroup () {
-  command="echo 15 | tee /proc/self/autogroup; $@"
-  setsid -w zsh -c "$command"  
+  NVIM="$nvim_server" nvim --server "$nvim_server" --remote-tab "$@"
 }
 
 _fzf_nvim_select() {
@@ -90,4 +80,3 @@ _cd_chromium() {
   BUFFER="cd ~/chromium/src"
   zle accept-line
 }
-

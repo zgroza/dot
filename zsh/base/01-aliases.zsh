@@ -1,9 +1,6 @@
 # Generic Aliases
+# `ls`/`la` differ between GNU and BSD coreutils and live in os/.
 alias l='reset'
-alias la='ls -laht --color --hyperlink=auto'
-alias ls='ls -a --color --hyperlink=auto'
-alias code='code --enable-features=UseOzonePlatform --ozone-platform=wayland'
-alias limit_cores="taskset -c 4-$((`nproc` - 1))"
 if [[ "$TERM" == "xterm-kitty" ]]; then
   alias s="kitten ssh"
 else

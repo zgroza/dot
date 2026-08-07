@@ -1,4 +1,7 @@
 # Plugins
+# The autosuggestions/syntax-highlighting install paths differ per system and
+# live in os/*/05-plugins.zsh.
+
 # fzf
 if command -v fzf &>/dev/null; then
   FZF_VERSION="$(fzf --version | cut -d' ' -f1)"
@@ -8,16 +11,7 @@ if command -v fzf &>/dev/null; then
   export FZF_DEFAULT_OPTS='--height 20% --border'
 fi
 
-# autosuggestions - possible locations
-for file in /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh; do
-  [[ -f "$file" ]] && source "$file"
-done
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-
-# syntax highlighting
-for file in /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh; do
-  [[ -f "$file" ]] && source "$file"
-done
 
 # nvm
 export NVM_DIR="$HOME/.nvm"

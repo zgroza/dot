@@ -15,6 +15,7 @@ vim.cmd("filetype plugin indent on")
 -- Neovim-specific UI improvements
 vim.opt.termguicolors = true  -- Enable 24-bit RGB colors
 vim.opt.mouse = "a"           -- Enable mouse support in all modes
+vim.opt.mousemoveevent = true -- Report pointer movement (used by hover.nvim)
 vim.opt.winborder = "rounded" -- Border for floating windows
 vim.opt.undofile = true       -- Persistent undo
 vim.opt.hlsearch = true       -- Highlight search results

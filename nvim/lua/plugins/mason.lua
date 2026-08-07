@@ -1,5 +1,6 @@
 return {
   "mason-org/mason.nvim",
+  pin = true,
   opts = {
     ui = {
       icons = {

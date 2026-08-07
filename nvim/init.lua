@@ -26,11 +26,18 @@ require("core.keymaps")
 -- Load plugins using lazy.nvim
 require("lazy").setup {
   spec = {
+    -- lazy.nvim manages itself, so it isn't covered by the `plugins` import
+    -- and would be the one thing `:Lazy update` still moved.
+    { "folke/lazy.nvim", pin = true, },
     { import = "plugins", },
   },
   checker = {
     notify = false,
     enabled = true,
+    -- Every plugin is `pin = true`, and the checker skips pinned plugins by
+    -- default -- which would silently mean no update checks at all. This keeps
+    -- the notifications while updates stay opt-in via `:Lazy update <plugin>`.
+    check_pinned = true,
   },
   change_detection = {
     enabled = true,

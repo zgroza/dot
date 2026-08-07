@@ -34,6 +34,7 @@ end
 
 return {
   "stevearc/conform.nvim",
+  pin = true,
   dependencies = {
     "nvim-mini/mini.diff",
   },

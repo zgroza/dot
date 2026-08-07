@@ -1,9 +1,10 @@
 return {
   "hrsh7th/nvim-cmp",
+  pin = true,
   dependencies = {
-    "hrsh7th/cmp-nvim-lsp",
-    "hrsh7th/cmp-buffer",
-    "hrsh7th/cmp-path",
+    { "hrsh7th/cmp-nvim-lsp", pin = true, },
+    { "hrsh7th/cmp-buffer",   pin = true, },
+    { "hrsh7th/cmp-path",     pin = true, },
   },
   config = function()
     local cmp = require("cmp")

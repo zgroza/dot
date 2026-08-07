@@ -1,5 +1,6 @@
 return {
   "nvim-lualine/lualine.nvim",
+  pin = true,
   dependencies = {
     "folke/trouble.nvim",
   },

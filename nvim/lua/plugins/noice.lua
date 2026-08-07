@@ -1,5 +1,6 @@
 return {
   "folke/noice.nvim",
+  pin = true,
   event = "VeryLazy",
   opts = {
     cmdline = {
@@ -11,6 +12,6 @@ return {
     },
   },
   dependencies = {
-    "MunifTanjim/nui.nvim",
+    { "MunifTanjim/nui.nvim", pin = true, },
   }
 }

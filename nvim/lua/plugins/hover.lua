@@ -7,6 +7,7 @@
 -- below so that never gets pulled in.
 return {
   "lewis6991/hover.nvim",
+  pin = true,
   event = "VeryLazy",
   config = function()
     local hover = require("hover")

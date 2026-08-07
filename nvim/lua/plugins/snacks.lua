@@ -2,6 +2,7 @@ vim.opt.scrolloff = 20
 
 return {
   "folke/snacks.nvim",
+  pin = true,
   priority = 1000,
   lazy = false,
   ---@type snacks.Config

@@ -65,6 +65,7 @@ end
 
 return {
   "nvim-mini/mini.diff",
+  pin = true,
   version = "*",
   config = function()
     local mini_diff = require('mini.diff')

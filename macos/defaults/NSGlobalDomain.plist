@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AppleEnableSwipeNavigateWithScrolls</key>
+	<false/>
+	<key>com.apple.mouse.scaling</key>
+	<real>2</real>
+	<key>com.apple.swipescrolldirection</key>
+	<true/>
+	<key>com.apple.trackpad.forceClick</key>
+	<true/>
+	<key>com.apple.trackpad.scaling</key>
+	<real>1</real>
+</dict>
+</plist>

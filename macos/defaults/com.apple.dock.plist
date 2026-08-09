@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autohide</key>
+	<true/>
+	<key>mineffect</key>
+	<string>scale</string>
+	<key>minimize-to-application</key>
+	<false/>
+	<key>orientation</key>
+	<string>right</string>
+	<key>showAppExposeGestureEnabled</key>
+	<false/>
+	<key>tilesize</key>
+	<real>47</real>
+	<key>wvous-br-corner</key>
+	<integer>14</integer>
+</dict>
+</plist>

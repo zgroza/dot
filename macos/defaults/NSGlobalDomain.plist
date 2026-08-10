@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>AppleEnableSwipeNavigateWithScrolls</key>
-	<false/>
+	<true/>
 	<key>com.apple.mouse.scaling</key>
 	<real>2</real>
 	<key>com.apple.swipescrolldirection</key>

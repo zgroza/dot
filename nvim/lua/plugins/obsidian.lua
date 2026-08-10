@@ -51,6 +51,7 @@ end
 
 return {
   "obsidian-nvim/obsidian.nvim",
+  commit = "69fe7c6bf61a5222b5061a9a9dfc5023f2ec0fdc",
   pin = true,
   dependencies = {
     "hrsh7th/nvim-cmp",

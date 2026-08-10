@@ -28,15 +28,17 @@ require("lazy").setup {
   spec = {
     -- lazy.nvim manages itself, so it isn't covered by the `plugins` import
     -- and would be the one thing `:Lazy update` still moved.
-    { "folke/lazy.nvim", pin = true, },
+    { "folke/lazy.nvim", commit = "306a05526ada86a7b30af95c5cc81ffba93fef97", pin = true, },
     { import = "plugins", },
   },
   checker = {
     notify = false,
     enabled = true,
-    -- Every plugin is `pin = true`, and the checker skips pinned plugins by
-    -- default -- which would silently mean no update checks at all. This keeps
-    -- the notifications while updates stay opt-in via `:Lazy update <plugin>`.
+    -- The checker skips pinned plugins unless this is set. Note it can only
+    -- report a plugin as behind its *declared target* -- and since every spec
+    -- names an explicit commit, that target is always what's checked out. So
+    -- this reports nothing today; it starts mattering again for any plugin
+    -- whose `commit` is removed in favour of a branch or version range.
     check_pinned = true,
   },
   change_detection = {

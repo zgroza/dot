@@ -1,8 +1,12 @@
 return {
   "nvim-telescope/telescope.nvim",
-  tag = "v0.2.2",
+  -- v0.2.2. Pinned by commit rather than tag: a tag can be re-pointed upstream,
+  -- a commit hash cannot.
+  commit = "5255aa27c422de944791318024167ad5d40aad20",
   pin = true,
-  dependencies = { { "nvim-lua/plenary.nvim", pin = true, }, },
+  dependencies = {
+    { "nvim-lua/plenary.nvim", commit = "74b06c6c75e4eeb3108ec01852001636d85a932b", pin = true, },
+  },
   config = function()
     require("telescope").setup {
       defaults = {

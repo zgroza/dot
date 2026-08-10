@@ -1,2 +1,6 @@
+# Pins live in each plugin spec (`commit = "..."`) instead, so this file is
+# redundant -- and on machines where plugins are linked in locally it would
+# record those too.
+lazy-lock.json
 *nogit*
 

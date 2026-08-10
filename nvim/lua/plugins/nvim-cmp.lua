@@ -1,10 +1,11 @@
 return {
   "hrsh7th/nvim-cmp",
+  commit = "2ffe79f1f021def8dd1fcd81deb16f1bb0d989f3",
   pin = true,
   dependencies = {
-    { "hrsh7th/cmp-nvim-lsp", pin = true, },
-    { "hrsh7th/cmp-buffer",   pin = true, },
-    { "hrsh7th/cmp-path",     pin = true, },
+    { "hrsh7th/cmp-nvim-lsp", commit = "cbc7b02bb99fae35cb42f514762b89b5126651ef", pin = true, },
+    { "hrsh7th/cmp-buffer",   commit = "b74fab3656eea9de20a9b8116afa3cfc4ec09657", pin = true, },
+    { "hrsh7th/cmp-path",     commit = "c642487086dbd9a93160e1679a1327be111cbc25", pin = true, },
   },
   config = function()
     local cmp = require("cmp")

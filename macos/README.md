@@ -29,6 +29,7 @@ choice differs per domain:
 | `com.apple.AppleMultitouchTrackpad` | merge | built-in trackpad |
 | `com.apple.driver.AppleBluetoothMultitouch.trackpad` | merge | Magic Trackpad |
 | `NSGlobalDomain` | merge | whitelisted keys only |
+| `pbs` | merge | Services shortcuts (`NSServicesStatus`) |
 
 - **full-replace** applies with `defaults import`, which replaces the whole
   domain. That is deliberate for shortcuts: unbinding one in System Settings

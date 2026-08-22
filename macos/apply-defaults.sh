@@ -36,6 +36,9 @@ post_apply() {
         com.apple.dock)
             killall Dock 2> /dev/null || true
             ;;
+        pbs)
+            /System/Library/CoreServices/pbs -update 2> /dev/null || true
+            ;;
     esac
 }
 

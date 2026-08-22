@@ -92,7 +92,9 @@ linux_links=(
     "waybar:$HOME/.config/waybar"
 )
 
-mac_links=()
+mac_links=(
+    "macos/Services/FnKeys.workflow:$HOME/Library/Services/FnKeys.workflow"
+)
 
 link_all() {
     local entry

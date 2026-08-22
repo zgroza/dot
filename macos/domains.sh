@@ -20,6 +20,7 @@ domains=(
     "com.apple.AppleMultitouchTrackpad:merge"
     "com.apple.driver.AppleBluetoothMultitouch.trackpad:merge"
     "NSGlobalDomain:merge"
+    "pbs:merge"
 )
 
 # Keys dropped on capture. The Dock's app lists are deliberately untracked --
@@ -52,6 +53,9 @@ keep_keys() {
             echo "com.apple.trackpad.scaling"
             echo "NSWindowResizeTime"
             echo "NSAutomaticWindowAnimationsEnabled"
+            ;;
+        pbs)
+            echo "NSServicesStatus"
             ;;
     esac
 }

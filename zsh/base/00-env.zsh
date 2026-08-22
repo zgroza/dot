@@ -4,6 +4,7 @@ path=(
   $HOME/.local/bin
   $HOME/.cargo/bin
   $HOME/.npm-packages/bin
+  $HOME/.lmstudio/bin
   $path
 )
 

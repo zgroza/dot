@@ -3,9 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>autohide</key>
-	<false/>
-	<key>autohide-time-modifier</key>
+	<true/>
+	<key>autohide-delay</key>
 	<real>0.0</real>
+	<key>autohide-time-modifier</key>
+	<real>0.15000000596046448</real>
 	<key>mineffect</key>
 	<string>scale</string>
 	<key>minimize-to-application</key>

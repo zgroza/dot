@@ -14,6 +14,8 @@
 	<false/>
 	<key>orientation</key>
 	<string>right</string>
+	<key>show-recents</key>
+	<false/>
 	<key>showAppExposeGestureEnabled</key>
 	<false/>
 	<key>tilesize</key>

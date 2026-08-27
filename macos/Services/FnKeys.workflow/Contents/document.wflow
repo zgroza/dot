@@ -67,7 +67,7 @@ else
     defaults write -g com.apple.keyboard.fnState -bool true
     msg="Function keys: Standard F1–F12"
 fi
-/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -us
 osascript -e "display notification \"$msg\" with title \"Fn Lock\""</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
@@ -178,12 +178,10 @@ osascript -e "display notification \"$msg\" with title \"Fn Lock\""</string>
 						<string>4</string>
 					</dict>
 				</dict>
-				<key>conversionLabel</key>
-				<integer>0</integer>
 				<key>isViewVisible</key>
 				<integer>1</integer>
 				<key>location</key>
-				<string>309.000000:411.000000</string>
+				<string>506.500000:305.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Run Shell Script.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>

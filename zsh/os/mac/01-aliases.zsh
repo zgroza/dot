@@ -8,3 +8,7 @@ else
   alias ls='ls -aG'
   alias la='command ls -lahtG'
 fi
+
+if (( ${ZSH_HAS_GNU_FINDUTILS:-0} )); then
+  alias find='gfind'
+fi

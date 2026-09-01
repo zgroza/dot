@@ -6,6 +6,9 @@
 # instead. Nothing is shadowed on PATH, so the system tools stay as they are.
 (( $+commands[gls] )) && ZSH_HAS_GNU_COREUTILS=1
 
+# Same with findutils
+(( $+commands[gfind] )) && ZSH_HAS_GNU_FINDUTILS=1
+
 # Security-key support via the keychain (was in ~/.zprofile).
 export SSH_SK_PROVIDER=/usr/lib/ssh-keychain.dylib
 

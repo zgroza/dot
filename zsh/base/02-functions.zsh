@@ -80,3 +80,8 @@ _cd_chromium() {
   BUFFER="cd ~/chromium/src"
   zle accept-line
 }
+
+_pwd_to_clipboard() {
+  pwd | set_clipboard
+}
+

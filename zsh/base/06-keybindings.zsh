@@ -25,3 +25,8 @@ bindkey -M vicmd '^E' _fzf_nvim_select
 
 zle -N _cd_chromium
 bindkey '^[d' _cd_chromium
+
+zle -N _pwd_to_clipboard
+bindkey '^[s' _pwd_to_clipboard
+bindkey -M vicmd '^[s' _pwd_to_clipboard
+

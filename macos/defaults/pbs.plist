@@ -4,10 +4,10 @@
 <dict>
 	<key>NSServicesStatus</key>
 	<dict>
-		<key>(null) - Toggle Fn Keys - runWorkflowAsService</key>
+		<key>(null) - FnKeys - runWorkflowAsService</key>
 		<dict>
 			<key>key_equivalent</key>
-			<string>~</string>
+			<string>~`</string>
 		</dict>
 	</dict>
 </dict>

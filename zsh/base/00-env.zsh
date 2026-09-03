@@ -1,6 +1,7 @@
 typeset -U path
 path=(
   $HOME/bin
+  $HOME/depot_tools
   $HOME/.local/bin
   $HOME/.cargo/bin
   $HOME/.npm-packages/bin

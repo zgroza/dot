@@ -8,27 +8,70 @@ md() {
 }
 
 get_clipboard() {
-  case "$1" in (c|p) ;; (*) echo "Usage: get_clipboard p|c"; return ;; esac
-  printf '\e]52;'$1';?\e\' >$TTY
-  local clip
-  read -s -r -d '\' -t 2 clip <$TTY
-  if (( $? )); then print "no clipboard available"; return; fi
-  local clipboard_contents
-  clipboard_contents=$(printf '%s' "$clip" | tr -d '\033' | sed 's/^.*;//' | _b64decode)
-  printf '%s' "$clipboard_contents"
+  case "${1:-c}" in (c|p) ;; (*) echo "Usage: get_clipboard [p|c]" >&2; return 1 ;; esac
+  if [[ -z "$TTY" || ! -r "$TTY" || ! -w "$TTY" ]]; then
+    print "no clipboard available" >&2
+    return 1
+  fi
+
+  local clip="" chunk="" bel=$'\a' saved_stty
+  saved_stty=$(stty -g <$TTY 2>/dev/null)
+  {
+    # Query terminal for clipboard via OSC 52.
+    # Raw mode is required because the terminal response lacks newlines.
+    stty raw -echo
+    printf '\e]52;%s;?\a' "${1:-c}" >$TTY
+    zmodload -F zsh/system b:sysread 2>/dev/null
+    # Read response (completes in one shot for payloads <8KB, loops if fragmented/large).
+    while sysread -t 2 -s 8192 chunk; do
+      clip+="$chunk"
+      [[ "$clip" == *"$bel"* || "$clip" == *'\'* ]] && break
+    done
+  } always {
+    # Guarantee terminal state is restored on error or interrupt.
+    [[ -n "$saved_stty" ]] && stty "$saved_stty" 2>/dev/null
+  } <$TTY
+
+  if [[ -z "$clip" ]]; then
+    print "no clipboard available" >&2
+    return 1
+  fi
+
+  # Accept both BEL (\a) and ESC \ (ST) terminators returned by different terminals.
+  clip="${clip%%$bel*}"
+  clip="${clip%%\\*}"
+
+  local b64_payload
+  b64_payload=$(printf '%s' "$clip" | tr -d '\033' | sed 's/^.*;//')
+  # '?' indicates the terminal denied permission to read the clipboard.
+  if [[ -z "$b64_payload" || "$b64_payload" == "?" ]]; then
+    print "no clipboard available" >&2
+    return 1
+  fi
+
+  printf '%s' "$b64_payload" | _b64decode
 }
 
 set_clipboard() {
   # Read from stdin, and send to clipboard via OSC 52
   local input
-  input=$(cat)
+  # Trailing sentinel preserves newlines that $() substitution would strip.
+  input=$(cat; printf x)
+  input="${input%x}"
+
   # Terminals have limits on escape sequence length.
   # Let's pick a conservative 750KB limit on the input.
   if (( ${#input} > 768000 )); then
     print "Input too large for clipboard." >&2
     return 1
   fi
-  printf "\e]52;c;%s\e\\" "$(echo -n "$input" | _b64encode)" >$TTY
+
+  if [[ -z "$TTY" || ! -w "$TTY" ]]; then
+    print "no terminal available" >&2
+    return 1
+  fi
+
+  printf '\e]52;%s;%s\a' "${1:-c}" "$(printf '%s' "$input" | _b64encode)" >$TTY
 }
 
 _reset() {

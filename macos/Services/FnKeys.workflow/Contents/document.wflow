@@ -67,7 +67,7 @@ else
     defaults write -g com.apple.keyboard.fnState -bool true
     msg="Function keys: Standard F1–F12"
 fi
-/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -us
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
 osascript -e "display notification \"$msg\" with title \"Fn Lock\""</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>

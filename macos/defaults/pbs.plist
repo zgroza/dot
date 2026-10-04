@@ -7,7 +7,7 @@
 		<key>(null) - FnKeys - runWorkflowAsService</key>
 		<dict>
 			<key>key_equivalent</key>
-			<string>^`</string>
+			<string>@^~f</string>
 		</dict>
 	</dict>
 </dict>

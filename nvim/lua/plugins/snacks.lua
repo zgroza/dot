@@ -3,7 +3,6 @@ vim.opt.scrolloff = 20
 return {
   "folke/snacks.nvim",
   commit = "882c996cf28183f4d63640de0b4c02ec886d01f2",
-  pin = true,
   priority = 1000,
   lazy = false,
   ---@type snacks.Config
@@ -30,7 +29,7 @@ return {
     },
     input = { enabled = true, },
     picker = { enabled = true, },
-    image = { enabled = true, },
+    image = { enabled = true, doc = { enabled = false, }, },
     notifier = { enabled = true, },
     indent = { enabled = true, },
     dashboard = { enabled = true, },

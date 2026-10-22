@@ -1,7 +1,6 @@
 return {
   "folke/noice.nvim",
   commit = "7bfd942445fb63089b59f97ca487d605e715f155",
-  pin = true,
   event = "VeryLazy",
   opts = {
     cmdline = {
@@ -13,6 +12,6 @@ return {
     },
   },
   dependencies = {
-    { "MunifTanjim/nui.nvim", commit = "de740991c12411b663994b2860f1a4fd0937c130", pin = true, },
+    { "MunifTanjim/nui.nvim", commit = "10fc361835c856ba4233ef5ea135b919bf3dce97", },
   }
 }

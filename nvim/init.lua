@@ -2,6 +2,12 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- lazy.nvim reads .git/HEAD and .git/refs as plain files, so it breaks on
+-- repos cloned with git's reftable backend. Older git only knows the
+-- GIT_DEFAULT_REF_FORMAT spelling.
+vim.env.GIT_DEFAULT_REF_STORAGE_FORMAT = "files"
+vim.env.GIT_DEFAULT_REF_FORMAT = "files"
+
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -28,18 +34,19 @@ require("lazy").setup {
   spec = {
     -- lazy.nvim manages itself, so it isn't covered by the `plugins` import
     -- and would be the one thing `:Lazy update` still moved.
-    { "folke/lazy.nvim", commit = "306a05526ada86a7b30af95c5cc81ffba93fef97", pin = true, },
+    { "folke/lazy.nvim", commit = "306a05526ada86a7b30af95c5cc81ffba93fef97", },
     { import = "plugins", },
   },
   checker = {
     notify = false,
     enabled = true,
-    -- The checker skips pinned plugins unless this is set. Note it can only
-    -- report a plugin as behind its *declared target* -- and since every spec
-    -- names an explicit commit, that target is always what's checked out. So
-    -- this reports nothing today; it starts mattering again for any plugin
-    -- whose `commit` is removed in favour of a branch or version range.
+    -- With every spec pinned to a `commit`, `:Lazy update` only ever checks
+    -- out that commit. This makes the checker additionally list plugins whose
+    -- upstream branch has moved past it under "Outdated" in `:Lazy`.
     check_pinned = true,
+  },
+  rocks = {
+    enabled = false,
   },
   change_detection = {
     enabled = true,

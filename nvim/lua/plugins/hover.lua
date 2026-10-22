@@ -8,7 +8,6 @@
 return {
   "lewis6991/hover.nvim",
   commit = "e73c00da3a9c87a21d2a8ddf7ab4a39824bd5d56",
-  pin = true,
   event = "VeryLazy",
   config = function()
     local hover = require("hover")

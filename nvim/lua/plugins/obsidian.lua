@@ -51,12 +51,11 @@ end
 
 return {
   "obsidian-nvim/obsidian.nvim",
-  commit = "69fe7c6bf61a5222b5061a9a9dfc5023f2ec0fdc",
-  pin = true,
+  -- v3.16.9
+  commit = "a562bedd7b418a289b005cb4c62b1fe79066253b",
   dependencies = {
     "hrsh7th/nvim-cmp",
   },
-  version = "*",
   ---@module 'obsidian'
   ---@type obsidian.config
   opts = {

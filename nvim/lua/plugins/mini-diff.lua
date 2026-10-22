@@ -67,7 +67,6 @@ return {
   "nvim-mini/mini.diff",
   -- Replaces `version = "*"`, which floated to the latest stable release.
   commit = "0743d26bd858ebe32efcf5c86a91a422a000f273",
-  pin = true,
   config = function()
     local mini_diff = require('mini.diff')
 

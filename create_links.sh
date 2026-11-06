@@ -77,6 +77,7 @@ common_links=(
     "zsh:$HOME/.config/zsh"
     "nvim:$HOME/.config/nvim"
     "kitty:$HOME/.config/kitty"
+    "ghostty:$HOME/.config/ghostty"
     "tmux/.tmux.conf:$HOME/.tmux.conf"
 )
 

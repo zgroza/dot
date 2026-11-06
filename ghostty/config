@@ -1,0 +1,8 @@
+# Allow OSC 52 clipboard read/write without prompting
+clipboard-read = allow
+clipboard-write = allow
+
+# Left Option sends Alt (for tmux M-... bindings), Right Option stays for macOS Unicode input
+macos-option-as-alt = left
+
+theme = iTerm2 Dark Background

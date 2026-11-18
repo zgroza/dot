@@ -1,4 +1,4 @@
-(( $+commands[jj] )) || return 0
+(( $+commands[jj] && $+commands[jq] )) || return 0
 
 # jj prompt segment for Powerlevel10k, originally inspired by
 # https://github.com/indirect/dotfiles (MIT license).
@@ -14,79 +14,94 @@ function _jj_prompt_worker() {
   # First query snapshots the working copy (no --ignore-working-copy) and finds
   # the nearest bookmark/tag/trunk commit. Capturing commit_id ensures downstream
   # revsets never break on conflicted bookmarks (`main??`) or names with `/`.
-  local branch_raw
-  branch_raw=$(jj log --no-pager --no-graph --limit 1 -r "
+  local branch_json
+  branch_json=$(jj log --no-pager --no-graph --limit 1 -r "
     coalesce(
       heads(::@ & (bookmarks() | remote_bookmarks() | tags())),
       heads(@:: & (bookmarks() | remote_bookmarks() | tags())),
       trunk()
-    )" -T '
-      commit_id ++ "\x1f" ++
-      local_bookmarks.filter(|b| !b.synced()).len() ++ "\x1f" ++
-      separate(" ", bookmarks, tags)
-    ' 2>/dev/null)
+    )" -T 'json({
+      "commit_id" => commit_id,
+      "unsynced" => local_bookmarks.filter(|b| !b.synced()).len(),
+      "bookmarks" => bookmarks,
+      "tags" => tags,
+    }) ++ "\n"' 2>/dev/null)
 
-  local -a branch_fields=("${(@ps:\x1f:)branch_raw}")
-  local branch_commit=${branch_fields[1]}
-  local -i unsynced=${branch_fields[2]:-0}
-  local branch=${branch_fields[3]%% *}
+  local branch_commit="" branch=""
+  local -i unsynced=0
+  if [[ -n $branch_json ]]; then
+    eval "$(jq -r '
+      ((.bookmarks + .tags)[0] // null) as $ref
+      | (if $ref == null then ""
+         else $ref.name
+            + (if $ref.remote then "@\($ref.remote)" else "" end)
+            + (if (($ref.target // []) | length) > 1 then "??" else "" end)
+         end) as $branch
+      | "branch_commit=\(.commit_id | @sh); unsynced=\(.unsynced); branch=\($branch | @sh)"
+    ' <<< "$branch_json" 2>/dev/null)"
+  fi
 
   local -i commits_after=0 commits_before=0 ahead=0 behind=0
   local ahead_plus="" behind_plus=""
   if [[ -n $branch && -n $branch_commit ]]; then
-    branch=${branch%\*}
-
     commits_after=$(jj log $_jj_ro --count -r "${branch_commit}..@ & (~empty() | merges())" 2>/dev/null)
     commits_before=$(jj log $_jj_ro --count -r "@..${branch_commit} & (~empty() | merges())" 2>/dev/null)
 
     if (( unsynced )); then
-      local -a counts
-      counts=($(jj bookmark list $_jj_ro -r "$branch_commit" -T '
-        if(remote && remote != "git" && tracked,
-          separate(" ",
-            name ++ "@" ++ remote,
-            coalesce(tracking_behind_count.exact(), tracking_behind_count.lower()),
-            coalesce(tracking_ahead_count.exact(), tracking_ahead_count.lower()),
-            if(tracking_behind_count.exact(), "0", "+"),
-            if(tracking_ahead_count.exact(), "0", "+"),
-          ) ++ "\n"
-        )
-      ' 2>/dev/null))
+      local remote_json
+      remote_json=$(jj bookmark list $_jj_ro -r "$branch_commit" -T '
+        if(remote && remote != "git" && tracked, json({
+          "ahead_lower" => tracking_behind_count.lower(),
+          "ahead_upper" => tracking_behind_count.upper(),
+          "behind_lower" => tracking_ahead_count.lower(),
+          "behind_upper" => tracking_ahead_count.upper(),
+        }) ++ "\n")
+      ' 2>/dev/null)
 
-      ahead=${counts[2]:-0}
-      behind=${counts[3]:-0}
-      ahead_plus=${counts[4]}
-      behind_plus=${counts[5]}
+      if [[ -n $remote_json ]]; then
+        eval "$(jq -rs '
+          .[0] // empty
+          | "ahead=\(.ahead_lower); behind=\(.behind_lower)"
+          + "; ahead_plus=\(if .ahead_upper == .ahead_lower then "" else "+" end | @sh)"
+          + "; behind_plus=\(if .behind_upper == .behind_lower then "" else "+" end | @sh)"
+        ' <<< "$remote_json" 2>/dev/null)"
+      fi
     fi
   fi
 
   # Single query for `@`: change_id, status flags, empty bit, description, diff counts.
-  local wc_raw
-  wc_raw=$(jj log $_jj_ro --no-graph --limit 1 -r '@' -T '
-    change_id.shortest(4).prefix() ++ "\x1f" ++
-    change_id.shortest(4).rest() ++ "\x1f" ++
-    concat(
-      if(conflict, "💥"),
-      if(divergent, "🚧"),
-      if(hidden, "👻"),
-      if(immutable, "🔒"),
-    ) ++ "\x1f" ++
-    if(empty, "1", "0") ++ "\x1f" ++
-    description.first_line() ++ "\x1f" ++
-    diff.files().filter(|f| f.status() == "added" || f.status() == "copied").len() ++ "\x1f" ++
-    diff.files().filter(|f| f.status() == "removed").len() ++ "\x1f" ++
-    diff.files().filter(|f| f.status() == "modified" || f.status() == "renamed").len()
-  ' 2>/dev/null)
+  local wc_json
+  wc_json=$(jj log $_jj_ro --no-graph --limit 1 -r '@' -T 'json({
+    "prefix" => change_id.shortest(4).prefix(),
+    "rest" => change_id.shortest(4).rest(),
+    "conflict" => conflict,
+    "divergent" => divergent,
+    "hidden" => hidden,
+    "immutable" => immutable,
+    "empty" => empty,
+    "desc" => description.first_line(),
+    "added" => diff.files().filter(|f| f.status() == "added" || f.status() == "copied").len(),
+    "deleted" => diff.files().filter(|f| f.status() == "removed").len(),
+    "modified" => diff.files().filter(|f| f.status() == "modified" || f.status() == "renamed").len(),
+  }) ++ "\n"' 2>/dev/null)
 
-  local -a wc=("${(@ps:\x1f:)wc_raw}")
-  local change_prefix=${wc[1]}
-  local change_rest=${wc[2]}
-  local action=${wc[3]}
-  local is_empty=${wc[4]}
-  local desc=${wc[5]}
-  local -i added=${wc[6]:-0}
-  local -i deleted=${wc[7]:-0}
-  local -i modified=${wc[8]:-0}
+  local change_prefix="" change_rest="" action="" desc=""
+  local -i is_empty=1 added=0 deleted=0 modified=0
+  if [[ -n $wc_json ]]; then
+    eval "$(jq -r '
+      "change_prefix=\(.prefix | @sh)"
+      + "; change_rest=\(.rest | @sh)"
+      + "; action=\((
+          (if .conflict then "💥" else "" end)
+          + (if .divergent then "🚧" else "" end)
+          + (if .hidden then "👻" else "" end)
+          + (if .immutable then "🔒" else "" end)
+        ) | @sh)"
+      + "; is_empty=\(if .empty then 1 else 0 end)"
+      + "; desc=\(.desc | @sh)"
+      + "; added=\(.added); deleted=\(.deleted); modified=\(.modified)"
+    ' <<< "$wc_json" 2>/dev/null)"
+  fi
 
   # Format prompt string.
   local status_color=$green
@@ -118,7 +133,7 @@ function _jj_prompt_worker() {
 
   if [[ -n $desc ]]; then
     res+=" ${green}${desc//\%/%%}"
-  elif [[ $is_empty == "0" ]]; then
+  elif (( ! is_empty )); then
     res+=" ${green}"$'\Uf040 '
   fi
 
@@ -132,11 +147,23 @@ function _jj_prompt_worker() {
 # 2. ASYNC & POWERLEVEL10K PLUMBING
 typeset -g _jj_prompt_fd=""
 typeset -g _jj_prompt_pwd=""
+typeset -g _jj_prompt_stale=""
 typeset -g p10k_jj_status=""
 
 function _jj_prompt_in_repo() {
   emulate -L zsh -o extended_glob
   [[ -n ./(../)#(.jj)(#qN/) || -n ./(../)#.git/.jj(#qN/) ]]
+}
+
+function _jj_prompt_dim() {
+  emulate -L zsh -o extended_glob
+  local s=$1
+  # Preserve literal escaped `%%` while stripping color codes (`%<N>F`), then
+  # render the whole string in grey (`%244F`).
+  s=${s//\%\%/$'\x01'}
+  s=${s//\%[0-9]##F/}
+  s=${s//$'\x01'/\%\%}
+  REPLY="%244F${s}"
 }
 
 function _jj_prompt_cancel() {
@@ -153,10 +180,14 @@ function _jj_prompt_callback() {
   [[ -n $fd ]] || return
 
   if [[ $fd == $_jj_prompt_fd ]]; then
-    if read -r -u "$fd" output; then
+    if read -r -u "$fd" output && [[ -n $output ]]; then
       p10k_jj_status=$output
+      local REPLY=""
+      _jj_prompt_dim "$output"
+      _jj_prompt_stale=$REPLY
     else
       p10k_jj_status=""
+      _jj_prompt_stale=""
     fi
     _jj_prompt_cancel "$fd"
     p10k display -r
@@ -171,7 +202,11 @@ function _jj_prompt_start() {
 
   if [[ $PWD != $_jj_prompt_pwd ]]; then
     p10k_jj_status=""
+    _jj_prompt_stale=""
     _jj_prompt_cancel
+  elif [[ -n $_jj_prompt_stale ]]; then
+    # Dim the previously rendered status while the background refresh runs.
+    p10k_jj_status=$_jj_prompt_stale
   fi
 
   _jj_prompt_pwd=$PWD
@@ -189,6 +224,7 @@ function p10k-on-pre-prompt() {
     p10k display '*/vcs'=show
     (( $+functions[_jj_prompt_cancel] )) && _jj_prompt_cancel
     _jj_prompt_pwd=""
+    _jj_prompt_stale=""
     p10k_jj_status=""
   fi
 }

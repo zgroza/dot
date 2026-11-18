@@ -118,16 +118,17 @@ fi
   print "added" > "$repo/new.txt"
   print "changed" > "$repo/keep.txt"
   rm "$repo/del.txt"
-  jj describe -R "$repo" -m 'fix 100% \n handling' >/dev/null 2>&1
+  jj describe -R "$repo" -m 'it'\''s 100% $(echo PWNED) \n handling' >/dev/null 2>&1
 
   run_worker "$repo"
   if assert_no_err "diff + escape" \
-    && assert_contains "diff + escape (escaped %)" 'fix 100%% \n handling' \
+    && assert_contains "diff + escape (escaped % and @sh)" 'it'\''s 100%% $(echo PWNED) \n handling' \
+    && assert_not_contains "diff + escape (no cmd subst)" "PWNED " \
     && assert_contains "diff + escape (+1)" "%2F+1" \
     && assert_contains "diff + escape (-1)" "%196F-1" \
     && assert_contains "diff + escape (^1)" "%3F^1" \
     && assert_not_contains "diff + escape (no pencil)" $'\Uf040'; then
-    pass "diff counts (+1/-1/^1) and %/backslash escaping in description"
+    pass "diff counts (+1/-1/^1) and %/backslash/@sh escaping in description"
   fi
 }
 
@@ -330,6 +331,50 @@ fi
     pass "p10k-on-pre-prompt is self-contained for p10k instant prompt"
   else
     fail "p10k-on-pre-prompt instant prompt" "got ${(q+)ip_out}, expected ${(q+)expected}"
+  fi
+}
+
+# 12. _jj_prompt_dim strips colors to grey while preserving escaped %%
+{
+  local REPLY=""
+  _jj_prompt_dim '%6Fmain??›1 %2F⇡1 %5Fy%244Furn %2Ffix 100%%2F bug %3F^1'
+  local expected='%244Fmain??›1 ⇡1 yurn fix 100%%2F bug ^1'
+  if [[ $REPLY == $expected ]]; then
+    pass "_jj_prompt_dim dims colors to grey and preserves escaped %%"
+  else
+    fail "_jj_prompt_dim" "got ${(q+)REPLY}, expected ${(q+)expected}"
+  fi
+}
+
+# 13. Stale prompt is greyed out while background refresh is in flight
+{
+  local stale_out
+  stale_out=$(zsh -fc "
+    zle() { :; }
+    p10k() { :; }
+    source ${(q)target}
+    _jj_prompt_worker() { print -r -- '%2Fmain %5Fab%244Fcd'; }
+    cd ${(q)tmp}
+
+    # Simulate completed first prompt
+    _jj_prompt_pwd=\$PWD
+    p10k_jj_status='%2Fmain %5Fab%244Fcd'
+    _jj_prompt_dim \"\$p10k_jj_status\"
+    _jj_prompt_stale=\$REPLY
+
+    # Trigger background refresh in same dir -> immediately dims p10k_jj_status
+    _jj_prompt_start
+    print -r -- \"STALE=\$p10k_jj_status\"
+
+    # Complete callback -> restores full-color status
+    _jj_prompt_callback \"\$_jj_prompt_fd\"
+    print -r -- \"FRESH=\$p10k_jj_status\"
+  " 2>&1)
+  local expected=$'STALE=%244Fmain abcd\nFRESH=%2Fmain %5Fab%244Fcd'
+  if [[ $stale_out == $expected ]]; then
+    pass "stale status dims to grey during refresh and restores on completion"
+  else
+    fail "stale status dimming" "got ${(q+)stale_out}, expected ${(q+)expected}"
   fi
 }
 

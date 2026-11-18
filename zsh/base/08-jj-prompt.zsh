@@ -1,185 +1,214 @@
 (( $+commands[jj] )) || return 0
 
-# jj prompt logic is heavily inspired by https://github.com/indirect/dotfiles (MIT license),
-# partly just copied from there.
-#
-# 1. THE WORKER LOGIC
-#    Calculates the status string. Runs inside a background process.
-function jj_status_logic() {
+# jj prompt segment for Powerlevel10k, originally inspired by
+# https://github.com/indirect/dotfiles (MIT license).
+
+# 1. WORKER (runs in a background subshell; prints one formatted p10k status line)
+function _jj_prompt_worker() {
   emulate -L zsh
-  [[ -n "$1" ]] && cd "$1"
+  [[ -n $1 ]] && cd "$1" || return 1
 
-  local grey='%244F'
-  local green='%2F'
-  local blue='%39F'
-  local red='%196F'
-  local yellow='%3F'
-  local cyan='%6F'
-  local magenta='%5F'
+  local grey='%244F' green='%2F' red='%196F' yellow='%3F' cyan='%6F' magenta='%5F'
+  local -a _jj_ro=(--ignore-working-copy --no-pager)
 
-  ## jj_add (Snapshot)
-  jj --at-operation=@ debug snapshot 2>/dev/null
-
-  ## jj_at (Branch & Bookmark detection)
-  local branch=$(jj --ignore-working-copy --at-op=@ --no-pager log --no-graph --limit 1 -r "
+  # First query snapshots the working copy (no --ignore-working-copy) and finds
+  # the nearest bookmark/tag/trunk commit. Capturing commit_id ensures downstream
+  # revsets never break on conflicted bookmarks (`main??`) or names with `/`.
+  local branch_raw
+  branch_raw=$(jj log --no-pager --no-graph --limit 1 -r "
     coalesce(
       heads(::@ & (bookmarks() | remote_bookmarks() | tags())),
       heads(@:: & (bookmarks() | remote_bookmarks() | tags())),
       trunk()
-    )" -T "separate(' ', bookmarks, tags)" 2> /dev/null | cut -d ' ' -f 1)
+    )" -T '
+      commit_id ++ "\x1f" ++
+      local_bookmarks.filter(|b| !b.synced()).len() ++ "\x1f" ++
+      separate(" ", bookmarks, tags)
+    ' 2>/dev/null)
 
+  local -a branch_fields=("${(@ps:\x1f:)branch_raw}")
+  local branch_commit=${branch_fields[1]}
+  local -i unsynced=${branch_fields[2]:-0}
+  local branch=${branch_fields[3]%% *}
+
+  local -i commits_after=0 commits_before=0 ahead=0 behind=0
+  local ahead_plus="" behind_plus=""
+  if [[ -n $branch && -n $branch_commit ]]; then
+    branch=${branch%\*}
+
+    commits_after=$(jj log $_jj_ro --count -r "${branch_commit}..@ & (~empty() | merges())" 2>/dev/null)
+    commits_before=$(jj log $_jj_ro --count -r "@..${branch_commit} & (~empty() | merges())" 2>/dev/null)
+
+    if (( unsynced )); then
+      local -a counts
+      counts=($(jj bookmark list $_jj_ro -r "$branch_commit" -T '
+        if(remote && remote != "git" && tracked,
+          separate(" ",
+            name ++ "@" ++ remote,
+            coalesce(tracking_behind_count.exact(), tracking_behind_count.lower()),
+            coalesce(tracking_ahead_count.exact(), tracking_ahead_count.lower()),
+            if(tracking_behind_count.exact(), "0", "+"),
+            if(tracking_ahead_count.exact(), "0", "+"),
+          ) ++ "\n"
+        )
+      ' 2>/dev/null))
+
+      ahead=${counts[2]:-0}
+      behind=${counts[3]:-0}
+      ahead_plus=${counts[4]}
+      behind_plus=${counts[5]}
+    fi
+  fi
+
+  # Single query for `@`: change_id, status flags, empty bit, description, diff counts.
+  local wc_raw
+  wc_raw=$(jj log $_jj_ro --no-graph --limit 1 -r '@' -T '
+    change_id.shortest(4).prefix() ++ "\x1f" ++
+    change_id.shortest(4).rest() ++ "\x1f" ++
+    concat(
+      if(conflict, "💥"),
+      if(divergent, "🚧"),
+      if(hidden, "👻"),
+      if(immutable, "🔒"),
+    ) ++ "\x1f" ++
+    if(empty, "1", "0") ++ "\x1f" ++
+    description.first_line() ++ "\x1f" ++
+    diff.files().filter(|f| f.status() == "added" || f.status() == "copied").len() ++ "\x1f" ++
+    diff.files().filter(|f| f.status() == "removed").len() ++ "\x1f" ++
+    diff.files().filter(|f| f.status() == "modified" || f.status() == "renamed").len()
+  ' 2>/dev/null)
+
+  local -a wc=("${(@ps:\x1f:)wc_raw}")
+  local change_prefix=${wc[1]}
+  local change_rest=${wc[2]}
+  local action=${wc[3]}
+  local is_empty=${wc[4]}
+  local desc=${wc[5]}
+  local -i added=${wc[6]:-0}
+  local -i deleted=${wc[7]:-0}
+  local -i modified=${wc[8]:-0}
+
+  # Format prompt string.
+  local status_color=$green
+  (( ahead )) && status_color=$cyan
+  (( behind )) && status_color=$magenta
+  (( ahead && behind )) && status_color=$red
+
+  local res=""
   if [[ -n $branch ]]; then
-    [[ $branch =~ "\*$" ]] && branch=${branch::-1}
-
-    local VCS_STATUS_COMMITS_AFTER=$(jj --ignore-working-copy --at-op=@ --no-pager log --no-graph -r "$branch..@ & (~empty() | merges())" -T '"n"' 2> /dev/null | wc -c | tr -d ' ')
-    local VCS_STATUS_COMMITS_BEFORE=$(jj --ignore-working-copy --at-op=@ --no-pager log --no-graph -r "@..$branch & (~empty() | merges())" -T '"n"' 2> /dev/null | wc -c | tr -d ' ')
-    local counts=($(jj --ignore-working-copy --at-op=@ --no-pager bookmark list -r $branch -T '
-      if(remote,
-        separate(" ",
-          name ++ "@" ++ remote, 
-          coalesce(tracking_behind_count.exact(), tracking_behind_count.lower()),
-          coalesce(tracking_ahead_count.exact(), tracking_ahead_count.lower()),
-          if(tracking_behind_count.exact(), "0", "+"),
-          if(tracking_ahead_count.exact(), "0", "+"),
-        ) ++ "\n"
-      )
-    '))
-
-    local VCS_STATUS_LOCAL_BRANCH=$branch
-    local VCS_STATUS_COMMITS_AHEAD=$counts[2]
-    local VCS_STATUS_COMMITS_BEHIND=$counts[3]
-    local VCS_STATUS_COMMITS_AHEAD_PLUS=$counts[4]
-    local VCS_STATUS_COMMITS_BEHIND_PLUS=$counts[5]
+    local where=${(V)branch}
+    (( $#where > 32 )) && where[13,-13]="…"
+    res+="${status_color}${where//\%/%%}"
+    (( commits_before )) && res+="‹${commits_before}"
+    (( commits_after )) && res+="›${commits_after}"
   fi
 
-  local status_color=${green}
-  (( VCS_STATUS_COMMITS_AHEAD )) && status_color=${cyan}
-  (( VCS_STATUS_COMMITS_BEHIND )) && status_color=${magenta}
-  (( VCS_STATUS_COMMITS_AHEAD && VCS_STATUS_COMMITS_BEHIND )) && status_color=${red}
+  if (( behind )); then
+    res+=" ${green}⇣${behind}"
+    [[ $behind_plus == "+" ]] && res+="+"
+  fi
+  if (( ahead )); then
+    (( ! behind )) && res+=" "
+    res+="${green}⇡${ahead}"
+    [[ $ahead_plus == "+" ]] && res+="+"
+  fi
 
-  local res
-  local where=${(V)VCS_STATUS_LOCAL_BRANCH}
-  (( $#where > 32 )) && where[13,-13]="…"
-  res+="${status_color}${where//\%/%%}" 
+  res+=" ${magenta}${change_prefix}${grey}${change_rest}"
+  [[ -n $action ]] && res+=" ${red}${action}"
 
-  (( VCS_STATUS_COMMITS_BEFORE )) && res+="‹${VCS_STATUS_COMMITS_BEFORE}"
-  (( VCS_STATUS_COMMITS_AFTER )) && res+="›${VCS_STATUS_COMMITS_AFTER}"
-  
-  ## jj_remote
-  # ⇣42 if behind the remote.
-  (( VCS_STATUS_COMMITS_BEHIND )) && res+=" ${green}⇣${VCS_STATUS_COMMITS_BEHIND}"
-  (( VCS_STATUS_COMMITS_BEHIND_PLUS )) && res+="${VCS_STATUS_COMMITS_BEHIND_PLUS}"
-  # ⇡42 if ahead of the remote; no leading space if also behind the remote: ⇣42⇡42.
-  (( VCS_STATUS_COMMITS_AHEAD && !VCS_STATUS_COMMITS_BEHIND )) && res+=" "
-  (( VCS_STATUS_COMMITS_AHEAD  )) && res+="${green}⇡${VCS_STATUS_COMMITS_AHEAD}"
-  (( VCS_STATUS_COMMITS_AHEAD_PLUS )) && res+="${VCS_STATUS_COMMITS_AHEAD_PLUS}"
+  if [[ -n $desc ]]; then
+    res+=" ${green}${desc//\%/%%}"
+  elif [[ $is_empty == "0" ]]; then
+    res+=" ${green}"$'\Uf040 '
+  fi
 
-  ## jj_change
-  IFS="#" local change=($(jj --ignore-working-copy --at-op=@ --no-pager log --no-graph --limit 1 -r "@" -T '
-    separate("#", change_id.shortest(4).prefix(), coalesce(change_id.shortest(4).rest(), "\0"),
-      commit_id.shortest(4).prefix(),
-      coalesce(commit_id.shortest(4).rest(), "\0"),
-      concat(
-        if(conflict, "💥"),
-        if(divergent, "🚧"),
-        if(hidden, "👻"),
-        if(immutable, "🔒"),
-      ),
-    )'))
-  local VCS_STATUS_CHANGE=($change[1] $change[2])
-  local VCS_STATUS_COMMIT=($change[3] $change[4])
-  local VCS_STATUS_ACTION=$change[5]
-  
-  res+=" ${magenta}${VCS_STATUS_CHANGE[1]}${grey}${VCS_STATUS_CHANGE[2]}"
-  [[ -n $VCS_STATUS_ACTION      ]] && res+=" ${red}${VCS_STATUS_ACTION}"
+  (( added )) && res+=" ${green}+${added}"
+  (( deleted )) && res+=" ${red}-${deleted}"
+  (( modified )) && res+=" ${yellow}^${modified}"
 
-  ## jj_desc
-  local VCS_STATUS_MESSAGE=$(jj --ignore-working-copy --at-op=@ --no-pager log --no-graph --limit 1 -r "@" -T "coalesce(description.first_line(), if(!empty, '\Uf040 '))")
-  [[ -n $VCS_STATUS_MESSAGE ]] && res+=" ${green}${VCS_STATUS_MESSAGE}"
-   
-  ## jj_status
-  local VCS_STATUS_CHANGES=($(jj log --ignore-working-copy --at-op=@ --no-graph --no-pager -r @ -T "diff.summary()" 2> /dev/null | awk 'BEGIN {a=0;d=0;m=0} /^A / {a++} /^D / {d++} /^M / {m++} /^R / {m++} /^C / {a++} END {print(a,d,m)}'))
-  (( VCS_STATUS_CHANGES[1] )) && res+=" %F{green}+${VCS_STATUS_CHANGES[1]}"
-  (( VCS_STATUS_CHANGES[2] )) && res+=" %F{red}-${VCS_STATUS_CHANGES[2]}"
-  (( VCS_STATUS_CHANGES[3] )) && res+=" ${yellow}^${VCS_STATUS_CHANGES[3]}"
-
-  echo "$res"
+  print -r -- "$res"
 }
 
-# 2. ASYNC INFRASTRUCTURE
-typeset -g jj_async_fd
-typeset -g _jj_worker_pwd=""
+# 2. ASYNC & POWERLEVEL10K PLUMBING
+typeset -g _jj_prompt_fd=""
+typeset -g _jj_prompt_pwd=""
+typeset -g p10k_jj_status=""
 
-# Callback: Triggered when the background process finishes
-function jj_async_callback() {
-  local fd=$1
-  local output
+function _jj_prompt_in_repo() {
+  emulate -L zsh -o extended_glob
+  [[ -n ./(../)#(.jj)(#qN/) || -n ./(../)#.git/.jj(#qN/) ]]
+}
 
-  if [[ -n "$fd" ]]; then
-     if read -r -u "$fd" output; then
-        typeset -g p10k_jj_status="$output"
-     else
-        typeset -g p10k_jj_status=""
-     fi
-     
-     # Cleanup
-     zle -F "$fd" 2>/dev/null
-     exec {fd}<&-
-     jj_async_fd=""
-
-     p10k display -r
+function _jj_prompt_cancel() {
+  local fd=${1:-$_jj_prompt_fd}
+  if [[ -n $fd ]]; then
+    zle -F "$fd" 2>/dev/null
+    exec {fd}<&- 2>/dev/null
+    [[ $fd == $_jj_prompt_fd ]] && _jj_prompt_fd=""
   fi
 }
 
-# Starter: Spawns the worker if not already running for this dir
-function jj_async_start() {
-  # Avoid restarting if already running for the current directory
-  [[ -n "$jj_async_fd" && "$PWD" == "$_jj_worker_pwd" ]] && return
-  # If directory changed, clear prompt
-  [[ "$PWD" != "$_jj_worker_pwd" ]] && typeset -g p10k_jj_status="" && p10k display -r
+function _jj_prompt_callback() {
+  local fd=$1 output=""
+  [[ -n $fd ]] || return
 
-  # If running for a DIFFERENT directory, kill the current worker
-  if [[ -n "$jj_async_fd" ]]; then
-    zle -F "$jj_async_fd" 2>/dev/null
-    exec {jj_async_fd}<&-
-    jj_async_fd=""
+  if [[ $fd == $_jj_prompt_fd ]]; then
+    if read -r -u "$fd" output; then
+      p10k_jj_status=$output
+    else
+      p10k_jj_status=""
+    fi
+    _jj_prompt_cancel "$fd"
+    p10k display -r
+  else
+    _jj_prompt_cancel "$fd"
   fi
-
-  _jj_worker_pwd="$PWD"
-  
-  # Spawn background worker
-  exec {jj_async_fd}< <( jj_status_logic "$PWD" )
-  zle -F "$jj_async_fd" jj_async_callback
 }
 
-# Hook to Hide Standard Git Segment
+function _jj_prompt_start() {
+  # Avoid restarting if a worker is already in flight for this directory.
+  [[ -n $_jj_prompt_fd && $PWD == $_jj_prompt_pwd ]] && return
+
+  if [[ $PWD != $_jj_prompt_pwd ]]; then
+    p10k_jj_status=""
+    _jj_prompt_cancel
+  fi
+
+  _jj_prompt_pwd=$PWD
+  exec {_jj_prompt_fd}< <( _jj_prompt_worker "$PWD" )
+  zle -F "$_jj_prompt_fd" _jj_prompt_callback
+}
+
+# Must be self-contained: Powerlevel10k serializes this function's body verbatim
+# into its instant-prompt cache and executes it before 08-jj-prompt.zsh loads.
 function p10k-on-pre-prompt() {
   emulate -L zsh -o extended_glob
   if [[ -n ./(../)#(.jj)(#qN/) || -n ./(../)#.git/.jj(#qN/) ]]; then
     p10k display '*/vcs'=hide
   else
     p10k display '*/vcs'=show
-    # Cleanup async worker if we leave the repo
-    if [[ -n "$jj_async_fd" ]]; then
-        zle -F "$jj_async_fd" 2>/dev/null
-        exec {jj_async_fd}<&-
-        jj_async_fd=""
-    fi
+    (( $+functions[_jj_prompt_cancel] )) && _jj_prompt_cancel
+    _jj_prompt_pwd=""
+    p10k_jj_status=""
   fi
 }
 
-# The Prompt Segment Function
 function prompt_jj() {
-  emulate -L zsh -o extended_glob
-  
-  # 1. Check if we are in a JJ repo
-  if [[ -z ./(../)#(.jj)(#qN/) && -z ./(../)#.git/.jj(#qN/) ]]; then
-     return
-  fi
-
-  # 2. Trigger the async worker (idempotent)
-  jj_async_start
-
+  _jj_prompt_in_repo || return
+  _jj_prompt_start
   p10k segment -f grey -c '${p10k_jj_status}' -e -t '${p10k_jj_status}'
   p10k segment -f grey -c '${${p10k_jj_status:-1}:#$p10k_jj_status}' -e -t '…'
 }
+
+# Register `jj` right after `vcs` so ~/.p10k.zsh does not need manual edits.
+if (( $+POWERLEVEL9K_LEFT_PROMPT_ELEMENTS )) && (( ! ${POWERLEVEL9K_LEFT_PROMPT_ELEMENTS[(I)jj(|_joined)]} )); then
+  () {
+    local idx=${POWERLEVEL9K_LEFT_PROMPT_ELEMENTS[(i)vcs(|_joined)]}
+    if (( idx <= $#POWERLEVEL9K_LEFT_PROMPT_ELEMENTS )); then
+      POWERLEVEL9K_LEFT_PROMPT_ELEMENTS[idx+1,idx]=(jj)
+    else
+      POWERLEVEL9K_LEFT_PROMPT_ELEMENTS+=(jj)
+    fi
+  }
+  (( $+functions[p10k] )) && p10k reload
+fi

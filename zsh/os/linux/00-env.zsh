@@ -1,4 +1,14 @@
-export SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-$XDG_RUNTIME_DIR/ssh-agent.socket}"
+if [[ -z "$SSH_AUTH_SOCK" && -n "$XDG_RUNTIME_DIR" ]]; then
+  () {
+    local sock
+    for sock in "$XDG_RUNTIME_DIR/openssh_agent" "$XDG_RUNTIME_DIR/ssh-agent.socket"; do
+      if [[ -S "$sock" ]]; then
+        export SSH_AUTH_SOCK="$sock"
+        break
+      fi
+    done
+  }
+fi
 
 export OPENER=xdg-open
 
